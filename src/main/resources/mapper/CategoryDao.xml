@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.example.demo.user.dao.CategoryDao">
+
+    <resultMap id="categoryDto" type="ParentCategoryInfo">
+        <id property="parentCategoryId" column="parentCategoryId" />
+        <result property="parentCategoryName" column="parentCategoryName" />
+        <result property="type" column="type" />
+
+        <collection property="childCategoryInfoList" ofType="ChildCategoryInfo">
+            <id property="categoryId" column="categoryId" />
+            <result property="categoryName" column="categoryName" />
+        </collection>
+    </resultMap>
+
+    <select id="findAllGroupByParentId" resultMap="categoryDto">
+        SELECT
+            parent.category_id AS parentCategoryId,
+            parent.category_name AS parentCategoryName,
+            parent.type AS type,
+            child.category_id AS categoryId,
+            child.category_name AS categoryName
+        FROM
+            categories parent
+        LEFT JOIN
+            categories child ON child.parent_id = parent.category_id
+        WHERE
+            parent.parent_id IS NULL
+        ORDER BY
+            parentCategoryId, categoryId
+    </select>
+
+    <insert id="saveTransaction">
+        INSERT INTO transactions(user_id, category_id, amount, description, created_at)
+        VALUES(#{userId}
+             , #{categoryInfo.childCategoryId}
+             , #{amount}
+             , #{description}
+             , CURRENT_TIMESTAMP)
+    </insert>
+
+</mapper>
